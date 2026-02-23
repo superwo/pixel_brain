@@ -1,0 +1,2 @@
+[console_scripts]
+pixel-brain = pixel_cell_m1:run
