@@ -101,7 +101,14 @@ def run(seed=3, H=120, W=120, T=4000):
         # drive = C*(N-A) + 0.3*M + 0.25*macro_up + 0.3*O
         drive = C*(N-A) + 0.3*M + 0.25*macro_up + 0.3*O + 0.15*A
 
-        A = A + dt*(np.tanh(drive)*gain - leak*A)
+        # A = A + dt*(np.tanh(drive)*gain - leak*A)
+        # Mild bistable intrinsic dynamics
+        alpha = 0.4     # linear self-excitation
+        beta  = 0.3     # cubic stabilization
+
+        intrinsic = alpha*A - beta*(A**3)
+
+        A = A + dt*(np.tanh(drive + intrinsic)*gain - leak*A)
         A += noise*rng.standard_normal((H,W))
         A = np.clip(A,-1.2,1.2)
 
