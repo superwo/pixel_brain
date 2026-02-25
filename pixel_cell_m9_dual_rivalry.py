@@ -86,8 +86,10 @@ def run(seed=3, H=160, W=160, T=3500,
     short_alpha=0.25
     long_alpha=0.02
 
-    beta = 0.6   # explorer suppressed by stabilizer
-    gamma = 0.3  # stabilizer suppressed less
+    # beta = 0.6   # explorer suppressed by stabilizer
+    # gamma = 0.3  # stabilizer suppressed less
+    beta = 0.35
+    gamma = 0.2
 
     err_short=np.zeros((H,W),dtype=np.float32)
     err_long=np.zeros((H,W),dtype=np.float32)
