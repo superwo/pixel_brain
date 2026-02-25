@@ -32,8 +32,21 @@ def run(seed=3, H=120, W=120, T=4000):
     A_macro = np.zeros((H//factor,W//factor),dtype=np.float32)
 
     # -------- Simple Temporal Sequence --------
-    sequence = [1,0,1,1,0,1,0,0,1,1]
-    seq_len = len(sequence)
+    def generate_bit(prev1, prev2):
+        # simple nonlinear rule with memory
+        return (prev1 ^ prev2)  # XOR of last two bits
+
+    history = [1, 0]
+
+    def get_bit(t):
+        # global history
+        if t < 2:
+            return history[t]
+        new_bit = generate_bit(history[-1], history[-2])
+        history.append(new_bit)
+        return new_bit
+    # sequence = [1,0,1,1,0,1,0,0,1,1]
+    # seq_len = len(sequence)
 
     # -------- Readout (Trainable) --------
     w = rng.normal()*0.1
@@ -62,8 +75,8 @@ def run(seed=3, H=120, W=120, T=4000):
         in_calibration = (t % cycle_length) < calibration_steps
 
         # ===== INPUT =====
-        x_t = sequence[t % seq_len]
-        x_next = sequence[(t+1) % seq_len]
+        x_t = get_bit(t)
+        x_next = get_bit(t+1)
 
         input_region = np.zeros((H,W), dtype=np.float32)
         input_region[5:15, 5:15] = float(x_t)
