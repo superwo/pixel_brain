@@ -32,17 +32,17 @@ def run(seed=3, H=120, W=120, T=4000):
     A_macro = np.zeros((H//factor,W//factor),dtype=np.float32)
 
     # -------- Simple Temporal Sequence --------
-    def generate_bit(prev1, prev2):
-        # simple nonlinear rule with memory
-        return (prev1 ^ prev2)  # XOR of last two bits
+    def generate_bit(prev1, prev2, prev3):
+        base = (prev1 ^ prev2 ^ prev3)
+        noise = np.random.rand() < 0.05  # 5% stochastic flip
+        return base ^ noise
 
-    history = [1, 0]
+    history = [1, 0, 1]
 
     def get_bit(t):
-        # global history
-        if t < 2:
+        if t < 3:
             return history[t]
-        new_bit = generate_bit(history[-1], history[-2])
+        new_bit = generate_bit(history[-1], history[-2], history[-3])
         history.append(new_bit)
         return new_bit
     # sequence = [1,0,1,1,0,1,0,0,1,1]
@@ -57,7 +57,8 @@ def run(seed=3, H=120, W=120, T=4000):
     dt=0.5
     leak=0.02
     macro_alpha=0.01
-    noise=0.01
+    # noise=0.01
+    noise = 0.006
 
     energy_in=0.01
     energy_diff=0.1
@@ -97,13 +98,15 @@ def run(seed=3, H=120, W=120, T=4000):
         A_macro = (1-macro_alpha)*A_macro + macro_alpha*downsample(A,factor)
         macro_up = upsample(A_macro,factor)
 
-        drive = C*(N-A) + 0.3*M + 0.25*macro_up + 0.3*O
+        # drive = C*(N-A) + 0.3*M + 0.25*macro_up + 0.3*O
+        drive = C*(N-A) + 0.3*M + 0.25*macro_up + 0.3*O + 0.15*A
 
         A = A + dt*(np.tanh(drive)*gain - leak*A)
         A += noise*rng.standard_normal((H,W))
         A = np.clip(A,-1.2,1.2)
 
-        M = 0.95*M + 0.05*A
+        # M = 0.95*M + 0.05*A
+        M = 0.98*M + 0.02*A
 
         # ===== DECODE =====
         read_region = A[H-15:H-5, W-15:W-5]
